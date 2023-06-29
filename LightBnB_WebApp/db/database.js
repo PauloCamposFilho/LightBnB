@@ -139,7 +139,7 @@ const getAllProperties = (options, limit = 10) => {
   return new Promise((resolve, reject) => {
     console.log("options", options);
     let hasWhereClause = false;
-    if (options["city"] || options["minimum_price_per_night"] || options["maximum_price_per_night"] || options["minimum_rating"]) {
+    if (options["city"] || options["minimum_price_per_night"] || options["maximum_price_per_night"] || options["minimum_rating"] || options["owner_id"]) {
       hasWhereClause = true;
     }
     let queryParams = [];
@@ -218,10 +218,32 @@ const getAllProperties = (options, limit = 10) => {
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function(property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
+  return new Promise((resolve, reject) => {
+    let queryParams = [];
+    for (const param in property) {
+      queryParams.push(property[param]);
+    }
+    console.log(property);
+    console.log(queryParams);
+    const insertQuery = `
+    INSERT INTO properties 
+      (title, description, number_of_bedrooms, number_of_bathrooms, parking_spaces, cost_per_night, thumbnail_photo_url, cover_photo_url, street, country, city, province, post_code, owner_id)
+      VALUES
+      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) returning *;
+    `;
+    pool
+      .query(insertQuery, queryParams)
+      .then((result) => {
+        resolve(result);
+      })
+      .catch((err) => {
+        reject(err.message);
+      });
+  });
+  // const propertyId = Object.keys(properties).length + 1;
+  // property.id = propertyId;
+  // properties[propertyId] = property;
+  // return Promise.resolve(property);
 };
 
 module.exports = {
