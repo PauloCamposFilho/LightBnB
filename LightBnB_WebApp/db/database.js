@@ -95,7 +95,38 @@ const addUser = function (user) {
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = function (guest_id, limit = 10) {
-  return getAllProperties(null, 2);
+  return new Promise((resolve, reject) => {
+    if (!guest_id) {
+      reject(new Error("guest_id cannot be null or empty"));
+    }
+    const query = `
+    SELECT
+      reservations.*
+      ,properties.title
+      ,properties.cost_per_night
+      ,AVG(property_reviews.rating) as average_rating
+    FROM
+      properties
+      JOIN reservations on reservations.property_id = properties.id
+      JOIN property_reviews on property_reviews.property_id = properties.id
+    WHERE
+      reservations.guest_id = $1
+    GROUP BY
+      reservations.id, properties.id
+    ORDER BY
+      reservations.start_date
+    LIMIT $2;
+    `;
+    const queryParams = [guest_id, limit];
+    pool
+      .query(query, queryParams)
+      .then((result) => {
+        resolve(result.rows);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
 };
 
 /// Properties
