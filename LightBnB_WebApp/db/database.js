@@ -137,7 +137,6 @@ const getAllReservations = function(guest_id, limit = 10) {
  */
 const getAllProperties = (options, limit = 10) => {
   return new Promise((resolve, reject) => {
-    console.log("options", options);
     let hasWhereClause = false;
     if (options["city"] || options["minimum_price_per_night"] || options["maximum_price_per_night"] || options["minimum_rating"] || options["owner_id"]) {
       hasWhereClause = true;
@@ -190,10 +189,7 @@ const getAllProperties = (options, limit = 10) => {
       ORDER BY
         properties.cost_per_night ASC
       LIMIT $${queryParams.length};
-    `;
-    console.log(query);
-    console.log("limit", limit);
-    console.log(queryParams);
+    `;    
     pool
       // .query(`SELECT * FROM properties LIMIT $1`, [limit])
       .query(query, queryParams)
@@ -216,9 +212,7 @@ const addProperty = function(property) {
     let queryParams = [];
     for (const param in property) {
       queryParams.push(property[param]);
-    }
-    console.log(property);
-    console.log(queryParams);
+    }    
     const insertQuery = `
     INSERT INTO properties 
       (title, description, number_of_bedrooms, number_of_bathrooms, parking_spaces, cost_per_night, thumbnail_photo_url, cover_photo_url, street, country, city, province, post_code, owner_id)
